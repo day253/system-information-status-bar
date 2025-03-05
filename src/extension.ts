@@ -1,27 +1,28 @@
-const vscode = require('vscode');
-const si = require('systeminformation');
-const path = require('path');
-const { exec } = require('child_process');
-const util = require('util');
+import * as vscode from 'vscode';
+import * as si from 'systeminformation';
+import * as path from 'path';
+import { exec } from 'child_process';
+import * as util from 'util';
+
 const execPromise = util.promisify(exec);
 
 // Status bar items for each metric
-let responseTimeItem;
-let cpuUsageItem;
-let memoryUsageItem;
-let diskUsageItem;
+let responseTimeItem: vscode.StatusBarItem;
+let cpuUsageItem: vscode.StatusBarItem;
+let memoryUsageItem: vscode.StatusBarItem;
+let diskUsageItem: vscode.StatusBarItem;
 
 // Update interval in milliseconds
-const UPDATE_INTERVAL = 2000;
+const UPDATE_INTERVAL: number = 2000;
 
 // Store the last response time
-let lastResponseTime = 0;
+let lastResponseTime: number = 0;
 
 /**
  * Activate the extension
  * @param {vscode.ExtensionContext} context
  */
-function activate(context) {
+export function activate(context: vscode.ExtensionContext): void {
     console.log('System Information extension is now active');
 
     // Create status bar items
@@ -67,7 +68,7 @@ function activate(context) {
                 modal: true
             });
         } catch (error) {
-            vscode.window.showErrorMessage(`Error fetching system information: ${error.message}`);
+            vscode.window.showErrorMessage(`Error fetching system information: ${error instanceof Error ? error.message : String(error)}`);
         }
     });
 
@@ -104,7 +105,13 @@ function activate(context) {
 /**
  * Format detailed system information for display
  */
-function formatDetailedInfo(cpu, mem, disk, osInfo, cpuTemp) {
+function formatDetailedInfo(
+    cpu: si.Systeminformation.CurrentLoadData, 
+    mem: si.Systeminformation.MemData, 
+    disk: si.Systeminformation.FsSizeData[], 
+    osInfo: si.Systeminformation.OsData, 
+    cpuTemp: si.Systeminformation.CpuTemperatureData
+): string {
     const cpuInfo = `CPU: ${cpu.currentLoad.toFixed(1)}% (Avg: ${cpu.avgLoad.toFixed(1)}%)
 Cores: ${cpu.cpus.length}
 User: ${cpu.currentLoadUser.toFixed(1)}%
@@ -120,7 +127,17 @@ Buffers: ${formatBytes(mem.buffers || 0)}
 Swap Used: ${formatBytes(mem.swapused)} / ${formatBytes(mem.swaptotal)} (${mem.swaptotal > 0 ? (mem.swapused / mem.swaptotal * 100).toFixed(1) : 0}%)`;
 
     // Get the main disk (usually the first one)
-    const mainDisk = disk[0] || {};
+    const mainDisk = disk[0] || {
+        fs: 'N/A',
+        type: 'N/A',
+        size: 0,
+        used: 0,
+        available: 0,
+        use: 0,
+        mount: 'N/A',
+        rw: true
+    } as si.Systeminformation.FsSizeData;
+    
     const diskInfo = `Disk: ${(mainDisk.used / 1024 / 1024 / 1024).toFixed(2)}GB / ${(mainDisk.size / 1024 / 1024 / 1024).toFixed(2)}GB (${mainDisk.use ? mainDisk.use.toFixed(1) : 0}%)
 Mount: ${mainDisk.mount || 'N/A'}
 FS: ${mainDisk.fs || 'N/A'}`;
@@ -138,7 +155,7 @@ Hostname: ${osInfo.hostname}`;
 /**
  * Update the status bar with system information
  */
-async function updateStatusBar() {
+async function updateStatusBar(): Promise<void> {
     try {
         // Measure response time
         const startTime = performance.now();
@@ -175,8 +192,18 @@ async function updateStatusBar() {
 点击查看更多详情`;
 
         // Get the main disk (usually the first one)
-        const mainDisk = disk[0] || {};
-        const diskPercentage = mainDisk.use ? mainDisk.use.toFixed(1) : 0;
+        const mainDisk = disk[0] || {
+            fs: 'N/A',
+            type: 'N/A',
+            size: 0,
+            used: 0,
+            available: 0,
+            use: 0,
+            mount: 'N/A',
+            rw: true
+        } as si.Systeminformation.FsSizeData;
+        
+        const diskPercentage = mainDisk.use ? mainDisk.use.toFixed(1) : '0';
         diskUsageItem.text = `$(database) ${diskPercentage}%`;
         diskUsageItem.tooltip = `磁盘使用率: ${diskPercentage}%
 总容量: ${formatBytes(mainDisk.size)}
@@ -196,7 +223,7 @@ async function updateStatusBar() {
 }
 
 // 测量远程连接延迟的综合方法
-async function measureRemoteLatency() {
+async function measureRemoteLatency(): Promise<number | null> {
     try {
         const startTime = performance.now();
         
@@ -231,7 +258,7 @@ async function measureRemoteLatency() {
 }
 
 // 使用系统 ping 命令测量网络延迟
-async function pingNetwork() {
+async function pingNetwork(): Promise<void> {
     try {
         // 获取远程主机名 (这可能需要根据您的设置调整)
         let hostname = 'localhost';
@@ -239,8 +266,8 @@ async function pingNetwork() {
         if (vscode.env.remoteName === 'ssh') {
             // 尝试从 SSH 配置中提取主机名
             // 这是一个简化的示例，实际实现可能更复杂
-            const config = await vscode.workspace.getConfiguration('remote.SSH');
-            const host = config.get('defaultHost');
+            const config = vscode.workspace.getConfiguration('remote.SSH');
+            const host = config.get<string>('defaultHost');
             if (host) {
                 hostname = host;
             }
@@ -260,7 +287,7 @@ async function pingNetwork() {
         
         if (match) {
             // 提取平均延迟值
-            const latency = match[1] || match[3] || 0;
+            const latency = match[1] || match[3] || '0';
             console.log(`Network ping latency: ${latency}ms`);
             
             // 更新状态栏
@@ -277,7 +304,7 @@ async function pingNetwork() {
 /**
  * Deactivate the extension
  */
-function deactivate() {
+export function deactivate(): void {
     // Clean up resources
     if (responseTimeItem) responseTimeItem.dispose();
     if (cpuUsageItem) cpuUsageItem.dispose();
@@ -286,15 +313,10 @@ function deactivate() {
 }
 
 // 格式化字节数为可读格式
-function formatBytes(bytes) {
+function formatBytes(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-module.exports = {
-    activate,
-    deactivate
-}; 
+} 

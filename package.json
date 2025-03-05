@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/day253/system-information-status-bar/issues"
   },
-  "main": "./src/extension.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -36,7 +36,7 @@
     "publish": "vsce package && vsce publish minor",
     "test": "echo \"Error: no test specified\" && exit 1",
     "debug": "node --inspect-brk=9229 ./node_modules/vscode/bin/test",
-    "watch": "node ./node_modules/vscode/bin/compile --watch",
+    "watch": "tsc -watch -p ./",
     "start": "code --extensionDevelopmentPath=${workspaceFolder}",
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -57,7 +57,8 @@
   "devDependencies": {
     "@types/node": "^16.0.0",
     "@types/vscode": "^1.60.0",
-    "@vscode/vsce": "^2.32.0"
+    "@vscode/vsce": "^2.32.0",
+    "typescript": "^4.9.5"
   },
   "configurations": [
     {
