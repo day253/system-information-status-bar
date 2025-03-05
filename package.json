@@ -2,7 +2,7 @@
   "name": "system-information-status-bar",
   "displayName": "System Information Status Bar",
   "description": "Display system information in the status bar",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "day253",
   "engines": {
     "vscode": "^1.60.0"
