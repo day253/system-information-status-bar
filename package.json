@@ -1,8 +1,9 @@
 {
-  "name": "vscode-sysinfo-extension",
-  "displayName": "System Information",
+  "name": "system-information-status-bar",
+  "displayName": "System Information Status Bar",
   "description": "Display system information in the status bar",
   "version": "1.0.0",
+  "publisher": "day253",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -12,6 +13,14 @@
   "activationEvents": [
     "*"
   ],
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/day253/system-information-status-bar"
+  },
+  "bugs": {
+    "url": "https://github.com/day253/system-information-status-bar/issues"
+  },
   "main": "./src/extension.js",
   "contributes": {
     "commands": [
@@ -22,6 +31,9 @@
     ]
   },
   "scripts": {
+    "login": "vsce login day253",
+    "tool": "npm install -g @vscode/vsce",
+    "publish": "vsce package && vsce publish minor",
     "test": "echo \"Error: no test specified\" && exit 1",
     "debug": "node --inspect-brk=9229 ./node_modules/vscode/bin/test",
     "watch": "node ./node_modules/vscode/bin/compile --watch",
