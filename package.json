@@ -1,0 +1,64 @@
+{
+  "name": "vscode-sysinfo-extension",
+  "displayName": "System Information",
+  "description": "Display system information in the status bar",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-sysinfo.showDetails",
+        "title": "Show System Information Details"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "debug": "node --inspect-brk=9229 ./node_modules/vscode/bin/test",
+    "watch": "node ./node_modules/vscode/bin/compile --watch",
+    "start": "code --extensionDevelopmentPath=${workspaceFolder}",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "keywords": [
+    "system",
+    "information",
+    "monitor",
+    "status"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "systeminformation": "^5.25.11"
+  },
+  "devDependencies": {
+    "@types/node": "^16.0.0",
+    "@types/vscode": "^1.60.0",
+    "@vscode/vsce": "^2.32.0"
+  },
+  "configurations": [
+    {
+      "name": "Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js"
+      ],
+      "preLaunchTask": "${defaultBuildTask}"
+    }
+  ]
+}
