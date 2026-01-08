@@ -52,7 +52,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "systeminformation": "^5.25.11"
+    "systeminformation": "^5.27.14"
   },
   "devDependencies": {
     "@types/node": "^16.0.0",
